@@ -1,3 +1,3 @@
 # haskell-experiments
 
-unstructure experiments as I learn Haskell
+unstructured experiments as I learn Haskell
