@@ -7,15 +7,15 @@ data Shape = Disc | Triangle
 data Size = Big | Small
 
 type Predicate = Thing -> Bool
-isRed, isBlue, isAmber, isDisk, isTriangle, isSmall, isBig :: Predicate
+isRed, isBlue, isAmber, isDisc, isTriangle, isSmall, isBig :: Predicate
 
-isDisk R = True
-isDisk U = True
-isDisk Y = True
-isDisk Z = True
-isDisk _ = False 
+isDisc R = True
+isDisc U = True
+isDisc Y = True
+isDisc Z = True
+isDisc _ = False 
 
-isTriangle x = not (isDisk x)
+isTriangle x = not (isDisc x)
 
 isRed U = True
 isRed V = True
