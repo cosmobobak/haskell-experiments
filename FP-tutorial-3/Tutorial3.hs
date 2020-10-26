@@ -2,7 +2,7 @@ module Tutorial3 where
 
 import Data.Char
 import Data.List
---import Test.QuickCheck
+import Test.QuickCheck
 
 -- 1.
 
