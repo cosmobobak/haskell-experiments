@@ -25,9 +25,9 @@ instance CoArbitrary Thing where
     coarbitrary E = variant 4
 
 type Predicate u = u -> Bool
-                    
-instance Show (u -> Bool) where
-    show p = "a predicate"
+
+instance Show (Thing -> Bool) where 
+    show p = show (filter p things)
 
 --------------------------------------------------------------------------------
 
@@ -71,19 +71,17 @@ gamma |||= delta =
 
 --------------------------------------------------------------------------------
 
--- The code you have to add starts here:
-
 (+:+) :: Predicate u -> Predicate u -> Predicate u
-p +:+ q = (p |:| neg q) &:& (neg p |:| q)
+p +:+ q = (p &:& neg q) |:| (neg p &:& q)
 
 (-:>) :: Predicate u -> Predicate u -> Predicate u
 p -:> q = neg p |:| q
 
 (<:>) :: Predicate u -> Predicate u -> Predicate u
-p <:> q = (p &:& q) |:| (neg p &:& neg q)
+p <:> q = (p -:> q) &:& (q -:> p)
 
 (|=|) :: Predicate Thing -> Predicate Thing -> Bool
 p |=| q = (p |= q) && (q |= p)
 
-prop_biconditional :: Predicate Thing -> Predicate Thing -> Bool
-prop_biconditional p q = (p |=| q) == ([] ||= (p <:> q))
+prop1 :: Predicate Thing -> Predicate Thing -> Bool
+prop1 p q = (p |=| q) == ([] ||= (p <:> q))
