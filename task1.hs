@@ -1,11 +1,10 @@
-square :: Integer -> Integer
-square x = x * x
 
-square_add :: Integer -> Integer -> Integer
-square_add a b = square a + square b
+data Flip x = F Float
+            | U Float
+    deriving (Show, Eq)
 
-fib :: Integer -> Integer
-fib 0 = 0
-fib 1 = 1
-fib n = (fib (n-1) + fib (n-2))
-
+(###) :: Flip x -> Flip x -> Flip x
+U a ### F b = U (a / b)
+F a ### U b = U (b / a)
+U a ### U b = U (a * b)
+F a ### F b = F (a * b)
