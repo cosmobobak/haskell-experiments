@@ -1,40 +1,40 @@
 import Data.Bits
 
-type Node = (Int, Int)
+type Node = (Int, Int, Bool, [Int])
 
-set_bit :: Int -> Int -> Int
-set_bit i node = ((bit 1) `shiftL` i) .|. node
+play :: Int -> Node -> Node
+play i (xs, os, t, stack) = case t of
+    True -> (setBit xs i, os, not t, stack)
+    False -> (xs, setBit os i, not t, stack)
 
-unset_bit :: Int -> Int -> Int
-unset_bit i node = (complement ((bit 1) `shiftL` i)) .&. node
+unplay :: Node -> Node
+unplay n@(_, _, _, []) = n
+unplay (xs, os, t, (s:stack)) = case t of
+  True -> (clearBit xs s, os, not t, stack)
+  False -> (xs, clearBit os s, not t, stack)
 
-play :: Int -> Int -> Int
-play square board = set_bit square board
-
-unplay :: Int -> Int -> Int
-unplay square board = unset_bit square board
-
-row_filled :: Int -> Bool
-row_filled halfnode = (
+rowFilled :: Int -> Bool
+rowFilled halfnode = (
     (testBit halfnode 0 && testBit halfnode 3 && testBit halfnode 6) || 
     (testBit halfnode 1 && testBit halfnode 4 && testBit halfnode 7) || 
     (testBit halfnode 2 && testBit halfnode 5 && testBit halfnode 8))
 
-col_filled :: Int -> Bool
-col_filled halfnode = (
-    (testBit halfnode 0 && testBit halfnode 1 && testBit halfnode 2) || 
-    (testBit halfnode 3 && testBit halfnode 4 && testBit halfnode 5) || 
+colFilled :: Int -> Bool
+colFilled halfnode = (
+    (testBit halfnode 0 && testBit halfnode 1 && testBit halfnode 2 || 
+    (testBit halfnode 3 && testBit halfnode 4 && testBit halfnode 5 || 
     (testBit halfnode 6 && testBit halfnode 7 && testBit halfnode 8))
 
+diaFilled :: Int -> Bool
+diaFilled halfnode = (
+    testBit halfnode 0 && testBit halfnode 4 && testBit halfnode 8) || 
+    (testBit halfnode 2 && testBit halfnode 4 && testBit halfnode 6)
+
 xwon :: Node -> Bool
-xwon n = row_filled a ||  col_filled a
-  where
-    a = fst n
+xwon (xs, _, _, _) = rowFilled xs || colFilled xs
 
 owon :: Node -> Bool
-owon n = row_filled b || col_filled b
-  where
-    b = snd n
+owon (_, os, _, _) = rowFilled os || colFilled os
 
 filled :: Node -> Bool
 filled n = and [testBit (fst n) i || testBit (snd n) i | i <- [0 .. 8]]
