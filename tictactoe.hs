@@ -1,17 +1,21 @@
 import Data.Bits
 
-type Node = (Int, Int, Bool, [Int])
+type Node = (Int, Int, Int, [Int])
+type Move = Int
+
+start :: Node
+start = (0, 0, -1, [])
 
 play :: Int -> Node -> Node
 play i (xs, os, t, stack) = case t of
-    True -> (setBit xs i, os, not t, stack)
-    False -> (xs, setBit os i, not t, stack)
+    (-1) -> (setBit xs i, os, 1, stack)
+    1 -> (xs, setBit os i, (-1), stack)
 
 unplay :: Node -> Node
 unplay n@(_, _, _, []) = n
 unplay (xs, os, t, (s:stack)) = case t of
-  True -> (clearBit xs s, os, not t, stack)
-  False -> (xs, clearBit os s, not t, stack)
+  (-1) -> (clearBit xs s, os, 1, stack)
+  1 -> (xs, clearBit os s, (-1), stack)
 
 rowFilled :: Int -> Bool
 rowFilled halfnode = (
@@ -21,8 +25,8 @@ rowFilled halfnode = (
 
 colFilled :: Int -> Bool
 colFilled halfnode = (
-    (testBit halfnode 0 && testBit halfnode 1 && testBit halfnode 2 || 
-    (testBit halfnode 3 && testBit halfnode 4 && testBit halfnode 5 || 
+    (testBit halfnode 0 && testBit halfnode 1 && testBit halfnode 2) || 
+    (testBit halfnode 3 && testBit halfnode 4 && testBit halfnode 5) || 
     (testBit halfnode 6 && testBit halfnode 7 && testBit halfnode 8))
 
 diaFilled :: Int -> Bool
@@ -31,21 +35,40 @@ diaFilled halfnode = (
     (testBit halfnode 2 && testBit halfnode 4 && testBit halfnode 6)
 
 xwon :: Node -> Bool
-xwon (xs, _, _, _) = rowFilled xs || colFilled xs
+xwon (xs, _, _, _) = rowFilled xs || colFilled xs || diaFilled xs
 
 owon :: Node -> Bool
-owon (_, os, _, _) = rowFilled os || colFilled os
+owon (_, os, _, _) = rowFilled os || colFilled os || diaFilled os
+
+pos_filled :: Node -> Int -> Bool
+pos_filled (xs, os, _, _) x = testBit xs x || testBit os x
 
 filled :: Node -> Bool
-filled n = and [testBit (fst n) i || testBit (snd n) i | i <- [0 .. 8]]
+filled n = and [pos_filled n i | i <- [0 .. 8]]
 
 is_game_over :: Node -> Bool
 is_game_over n = owon n || xwon n || filled n
 
+legal_moves :: Node -> [Move]
+legal_moves n = filter (\x -> not $ pos_filled n x) [0..8]
+
+argmax :: [a] -> (a -> Int) -> a
+argmax (x : xs) f = tracker xs x
+  where
+    tracker [] m = m
+    tracker (x:xs) m
+      | f x > f m = tracker xs x
+      | otherwise = tracker xs m
+
 negamax :: Node -> Int -> Int
-negamax n turn
-  | xwon n = 1 * turn
-  | owon n = -1 * turn
+negamax n@(xs, os, inturn, stack) turn
+  | xwon n = 1
+  | owon n = -1
   | filled n = 0
-  | turn == 1 = maximum [if testBit (fst n) j then (-2) else negamax gn (-1) | (gn, j) <- zip [(play i (fst n), snd n) | i <- [0..8]] [1..8]]
-  | turn == (-1) = maximum [if testBit (snd n) j then (-2) else negamax gn 1 | (gn, j) <- zip [(fst n, play i (snd n)) | i <- [0..8]] [1..8]]
+  | otherwise = maximum [-negamax childNode (-turn) | childNode <- map (\m -> play m n) (legal_moves n)]
+
+engine_move :: Node -> Node
+engine_move n = argmax (map (\m -> play m n) (legal_moves n)) (\x@(_, _, t, _) -> negamax x t)
+
+showNode :: Node -> String
+showNode (xs, os, t, stack) = 

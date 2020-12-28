@@ -17,6 +17,14 @@ maxval (x : xs) = tracker xs x
       | length x > length m = tracker xs x
       | otherwise = tracker xs m
 
+argmax :: [a] -> (a -> Int) -> Int
+argmax (x : xs) f = tracker xs x
+  where
+    tracker [] m = m
+    tracker (x:xs) m
+      | f x > f m = tracker xs x
+      | otherwise = tracker xs m
+
 factorial :: Int -> Int
 factorial 0 = 1
 factorial x = x * factorial (x - 1)
@@ -42,3 +50,10 @@ limIter un n x = un * (x**(1/n))
 reverseMatch :: Int -> Bool
 reverseMatch n | n > 3 = (pascal n !! 3) /= (2 * pascal n !! 2)
                | otherwise = True
+
+bump :: Float -> Float -> Float
+bump a b | a == b = a + 2
+         | otherwise = (a + b + 4) / 2
+
+multrootmean :: [Float] -> Float
+multrootmean xs = (foldr1 (*) xs) ** (1 / (fromIntegral $ length xs))
