@@ -17,7 +17,7 @@ maxval (x : xs) = tracker xs x
       | length x > length m = tracker xs x
       | otherwise = tracker xs m
 
-argmax :: [a] -> (a -> Int) -> Int
+argmax :: [a] -> (a -> Int) -> a
 argmax (x : xs) f = tracker xs x
   where
     tracker [] m = m
@@ -57,3 +57,29 @@ bump a b | a == b = a + 2
 
 multrootmean :: [Float] -> Float
 multrootmean xs = (foldr1 (*) xs) ** (1 / (fromIntegral $ length xs))
+
+intSquareRoot :: Int -> Int
+intSquareRoot n = aux n
+  where
+    aux x
+      | x * x > n = aux (x - 1)
+      | otherwise = x
+
+isPrime :: Int -> Bool
+isPrime k = if k > 1 then null [x | x <- [2 .. intSquareRoot k], k `mod` x == 0] else False
+
+step :: Int -> Int 
+step n = case n of
+    2 -> 6
+    3 -> 6
+    x -> if isPrime n then (if a || b then (if a then (n + 1) `div` 6 else (n - 1) `div` 6) else n * 2) else n + 1
+  where
+    a = isPrime (n + 2)
+    b = isPrime (n - 2)
+
+sequenceTest :: Int -> Int
+sequenceTest x = recurse 1 x
+  where 
+    recurse d n 
+      | n == d = n
+      | otherwise = recurse d (step n)
