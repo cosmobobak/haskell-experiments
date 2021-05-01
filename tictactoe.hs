@@ -18,15 +18,15 @@ unplay (xs, os, t, s:stack) = case t of
   1 -> (xs, clearBit os s, -t, stack)
 
 rowFilled :: Int -> Bool
-rowFilled halfnode = 
-    (testBit halfnode 0 && testBit halfnode 3 && testBit halfnode 6) || 
-    (testBit halfnode 1 && testBit halfnode 4 && testBit halfnode 7) || 
+rowFilled halfnode =
+    (testBit halfnode 0 && testBit halfnode 3 && testBit halfnode 6) ||
+    (testBit halfnode 1 && testBit halfnode 4 && testBit halfnode 7) ||
     (testBit halfnode 2 && testBit halfnode 5 && testBit halfnode 8)
 
 colFilled :: Int -> Bool
-colFilled halfnode = 
-    (testBit halfnode 0 && testBit halfnode 1 && testBit halfnode 2) || 
-    (testBit halfnode 3 && testBit halfnode 4 && testBit halfnode 5) || 
+colFilled halfnode =
+    (testBit halfnode 0 && testBit halfnode 1 && testBit halfnode 2) ||
+    (testBit halfnode 3 && testBit halfnode 4 && testBit halfnode 5) ||
     (testBit halfnode 6 && testBit halfnode 7 && testBit halfnode 8)
 
 diaFilled :: Int -> Bool
@@ -38,20 +38,20 @@ xwon (xs, _, _, _) = rowFilled xs || colFilled xs || diaFilled xs
 owon :: Node -> Bool
 owon (_, os, _, _) = rowFilled os || colFilled os || diaFilled os
 
-pos_filled :: Node -> Int -> Bool
-pos_filled (xs, os, _, _) x = testBit xs x || testBit os x
+posFilled :: Node -> Int -> Bool
+posFilled (xs, os, _, _) x = testBit xs x || testBit os x
 
-player_at :: Node -> Int -> Bool
-player_at (xs, os, _, _) x = testBit xs x
+playerAt :: Node -> Int -> Bool
+playerAt (xs, os, _, _) = testBit xs
 
 filled :: Node -> Bool
-filled n = and [pos_filled n i | i <- [0 .. 8]]
+filled n = and [posFilled n i | i <- [0 .. 8]]
 
-is_game_over :: Node -> Bool
-is_game_over n = owon n || xwon n || filled n
+isGameOver :: Node -> Bool
+isGameOver n = owon n || xwon n || filled n
 
-legal_moves :: Node -> [Move]
-legal_moves n = filter (not . pos_filled n) [0..8]
+legalMoves :: Node -> [Move]
+legalMoves n = filter (not . posFilled n) [0..8]
 
 argmax :: [a] -> (a -> Int) -> a
 argmax (x : xs) f = tracker xs x
@@ -66,10 +66,10 @@ negamax n@(xs, os, inturn, stack) turn
   | xwon n = 1
   | owon n = -1
   | filled n = 0
-  | otherwise = maximum [-negamax childNode (-turn) | childNode <- map (\m -> play m n) (legal_moves n)]
+  | otherwise = maximum [-negamax childNode (-turn) | childNode <- map (`play` n) (legalMoves n)]
 
-engine_move :: Node -> Node
-engine_move n = argmax (map (\m -> play m n) (legal_moves n)) (\x@(_, _, t, _) -> negamax x t)
+engineMove :: Node -> Node
+engineMove n = argmax (map (`play` n) (legalMoves n)) (\x@(_, _, t, _) -> negamax x t)
 
 intersperse :: a -> [a] -> [a]
 intersperse s [] = [s]
@@ -78,5 +78,5 @@ intersperse s (x : xs) = s : x : intersperse s xs
 showNode :: Node -> String
 showNode n@(xs, os, t, stack) = concat $ intersperse "\n" blocks
   where
-    blocks = groupBy 6 (intersperse ' ' [if pos_filled n x then (if player_at n x then 'X' else 'O') else '.' | x <- [0 .. 8]])
+    blocks = groupBy 6 (intersperse ' ' [if posFilled n x then (if playerAt n x then 'X' else 'O') else '.' | x <- [0 .. 8]])
     groupBy n xs = [[xs !! (i + l) | i <- [0 .. n -1]] | l <- [0, n .. length xs - n]]

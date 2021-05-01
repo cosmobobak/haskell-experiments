@@ -36,7 +36,7 @@ prop_2n :: Int -> Bool
 prop_2n n = sum [n `chooseA` r | r <- [0 .. n]] == 2 ^ n
 
 pascalIteration :: [Int] -> [Int]
-pascalIteration xs = [1] ++ [(xs !! n) + (xs !! (n + 1)) | n <- [0 .. (l -2)]] ++ [1]
+pascalIteration xs = [1] ++ [xs !! n + xs !! (n + 1) | n <- [0 .. (l -2)]] ++ [1]
   where
     l = length xs
 
@@ -45,11 +45,11 @@ pascal 0 = [1]
 pascal n = pascalIteration (pascal (n - 1))
 
 limIter :: Float -> Float -> Float -> Float
-limIter un n x = un * (x ** (1 / n))
+limIter un n x = un * x ** (1 / n)
 
 reverseMatch :: Int -> Bool
 reverseMatch n
-  | n > 3 = (pascal n !! 3) /= (2 * pascal n !! 2)
+  | n > 3 = pascal n !! 3 /= 2 * pascal n !! 2
   | otherwise = True
 
 bump :: Float -> Float -> Float
@@ -58,7 +58,7 @@ bump a b
   | otherwise = (a + b + 4) / 2
 
 multrootmean :: [Float] -> Float
-multrootmean xs = (foldr1 (*) xs) ** (1 / (fromIntegral $ length xs))
+multrootmean xs = product xs ** (1 / fromIntegral (length xs))
 
 intSquareRoot :: Int -> Int
 intSquareRoot n = aux n
@@ -68,7 +68,7 @@ intSquareRoot n = aux n
       | otherwise = x
 
 isPrime :: Int -> Bool
-isPrime k = if k > 1 then null [x | x <- [2 .. intSquareRoot k], k `mod` x == 0] else False
+isPrime k = (k > 1) && null [x | x <- [2 .. intSquareRoot k], k `mod` x == 0]
 
 step :: Int -> Int
 step n = case n of
